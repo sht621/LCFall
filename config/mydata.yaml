@@ -2,18 +2,17 @@ CUDNN:
   BENCHMARK: true
   DETERMINISTIC: false
   ENABLED: true
-DATA_DIR: '/path/to/panoptic'  #
-DATASET: 'panoptic'
-GPUS: '0,1' ##
-ENV_GPUS: '0'
-OUTPUT_DIR: 'output_panoptic_pc' 
+DATA_DIR: 'data' 
+PRED_2D_PATH: 'pred_2d'
+DATASET: 'mydata'
+GPUS: '0'
+OUTPUT_DIR: 'output_mydata' 
 MODEL: 'VoxelFusionNet' 
 LOG_DIR: 'log'
 WORKERS: 8
 PRINT_FREQ: 500
-NUM_JOINTS: 15
+NUM_JOINTS: 17
 SEED: 1
-THU: True
 
 NETWORK:
   IMAGE_SIZE: 
@@ -24,19 +23,6 @@ NETWORK:
     - 270
   MID_FDIM: 32 # 16
   HEAD_DIM: 32
-
-TRAIN:
-  BATCH_SIZE: 8 ##
-  SHUFFLE: true
-  BEGIN_EPOCH: 0
-  END_EPOCH: 10 # tranfer needs the early stop
-  RESUME: true
-  OPTIMIZER: adam
-  LR: 0.001
-  BETA: 100.0
-TEST:
-  MODEL_FILE: 'model_best.pth.tar'
-  BATCH_SIZE: 4
 
 PICT_STRUCT:
   GRID_SIZE:
@@ -51,3 +37,7 @@ PICT_STRUCT:
 DDP:
   NUM_PROCESS_PER_NODE: 1
   PORT: '10100'
+
+TEST:
+  CAMERA_NAMES: ["cam0"]
+
