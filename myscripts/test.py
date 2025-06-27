@@ -1,10 +1,10 @@
 # scripts/dry_run.py
 import torch, yaml, numpy as np
 from easydict import EasyDict
-from licampose.config import config, update_config
-from licampose.model.voxel_fusion_net import VoxelFusionNet
+from LiCamPoseUtils.config import config, update_config
+from LiCamPoseUtils.model.voxel_fusion_net import VoxelFusionNet
 
-update_config(config, "config/my_infer.yaml")
+update_config(config, "config/mydata.yaml")
 model = VoxelFusionNet(config).eval()
 dummy_3d  = torch.zeros((1,1,80,80,40))       # LiDAR
 dummy_hm  = [torch.zeros((1,17,64,64))]        # 1 view
