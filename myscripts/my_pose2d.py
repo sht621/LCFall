@@ -23,4 +23,5 @@ class YOLOPose:
             return np.zeros((17, 3), dtype=np.float32)
 
         kp = res[0].keypoints[0].cpu().numpy()   # (17,3) = x, y, conf
-        return kp.astype(np.float32)
+        return kp.numpy().astype(np.float32)
+
