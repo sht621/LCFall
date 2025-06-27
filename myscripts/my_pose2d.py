@@ -1,4 +1,3 @@
-# myscripts/my_pose2d.py
 import numpy as np
 import cv2                           # opencv-python-headless で OK
 from ultralytics import YOLO         # pip install ultralytics
@@ -21,7 +20,8 @@ class YOLOPose:
         if len(res) == 0 or len(res[0].keypoints) == 0:
             # 検出ゼロなら全0を返す (17,3)
             return np.zeros((17, 3), dtype=np.float32)
+        # ここがポイント！res[0].keypoints[0] は torch.Tensor (17,3)
+        kp = res[0].keypoints[0].cpu().numpy().astype(np.float32)  # ← .numpy() で十分
+        return kp
 
-        kp = res[0].keypoints[0].cpu().numpy()   # (17,3) = x, y, conf
-        return kp.numpy().astype(np.float32)
-
+# cv2 も必要なら外部へエクスポート
