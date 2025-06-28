@@ -12,7 +12,7 @@ import torch, cv2
 import numpy as np
 
 from LiCamPoseUtils.datasets.panoptic import Panoptic
-from my_pose2d import YOLOPose            # ← 任意の 2-D 推定器 (返り shape = (17,3))
+from myscripts.my_pose2d import YOLOPose            # ← 任意の 2-D 推定器 (返り shape = (17,3))
 
 
 class dataLoader(Panoptic):
