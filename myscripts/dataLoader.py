@@ -19,8 +19,13 @@ class dataLoader(Panoptic):
     """Panoptic を継承し、2-D キーポイントを “その場で推論” して Heat-Map を作る"""
 
     def __init__(self, cfg, datadir):
-        super().__init__(cfg, datadir)        # frame_ids, camera_dict など初期化
+        super().__init__(cfg, datadir)  # ここでpoints_ped_folder_filesが初期化される
         self.pose2d = YOLOPose(device='cuda:0')
+        # ここでframe_idsリストを自作
+        self.frame_ids = [
+            os.path.splitext(os.path.basename(f))[0]
+            for f in self.points_ped_folder_files
+        ]
 
     # ───────────────────────────────────────────
     def _infer_pose2d(self, img_path: Path) -> np.ndarray:
