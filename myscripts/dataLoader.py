@@ -14,7 +14,7 @@ class dataLoader(Panoptic):
     def __init__(self, cfg, datadir):
         super().__init__(cfg, datadir)
         self.pose2d = YOLOPose(device='cuda:0')
-        self.cfg = cfg  # ←Panoptic本家では未保存なので自前で保存
+        self.cfg = cfg  # Panoptic本家では未保存なので自前で保存
 
         # --- frame_idリストの生成（points_pedのファイル名から）
         points_ped_folder = os.path.join(datadir, 'sorted_data', 'points_ped')
@@ -64,12 +64,16 @@ class dataLoader(Panoptic):
         )  # (17, h, w)
 
         # Occupancy voxel & pelvis
-        # ★ポイント：中心座標の計算（点群xyzの中央値を使う）
         lidar_center = 0.5 * (np.max(xyz, axis=0) + np.min(xyz, axis=0))
         input3d = self.generate_3d_input(xyz, lidar_center)
 
-        # 射影行列（本家流で単カメラ対応）
-        projectionM = [torch.eye(4)]  # ダミー値（実際は本家のカメラ行列等に合わせて調整）
+        # ---- 本家Panopticに合わせたprojectionM ----
+        projectionM = [{
+            "K": torch.eye(3),      # カメラ内部行列(仮)
+            "R": torch.eye(3),      # 回転行列(仮)
+            "t": torch.zeros(3),    # 並進ベクトル(仮)
+            # 必要に応じて "top_crip": torch.zeros(3),
+        }]
 
         # テンソル化
         input3d = torch.from_numpy(input3d)[None].float()       # (1, d, w, h)
@@ -77,3 +81,6 @@ class dataLoader(Panoptic):
         grid_centers = torch.from_numpy(lidar_center)[None].float()  # (1, 3)
 
         return input3d, [heatmaps], projectionM, grid_centers
+
+    def __len__(self):
+        return len(self.frame_ids)
