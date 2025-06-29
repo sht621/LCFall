@@ -9,7 +9,7 @@ import json
 class dataLoader(Panoptic):
     """
     Panoptic を継承し、2-D キーポイントを “その場で推論” して Heat-Map を作る
-    カメラ1台対応 (フォルダ/ファイル名も現状のまま)
+    カメラ1台対応 (本家jsonに準拠)
     """
 
     def __init__(self, cfg, datadir):
@@ -17,47 +17,35 @@ class dataLoader(Panoptic):
         self.pose2d = YOLOPose(device='cuda:0')
         self.cfg = cfg  # Panoptic本家では未保存なので自前で保存
 
-        # --- frame_idリストの生成（points_pedのファイル名から）
+        # --- frame_idリストの生成
         points_ped_folder = os.path.join(datadir, 'sorted_data', 'points_ped')
         files = sorted([f for f in os.listdir(points_ped_folder) if f.endswith('.ply')])
         self.frame_ids = [os.path.splitext(f)[0].replace('_001','') for f in files]
         self.image_dir = os.path.join(datadir, 'sorted_data', 'hdImgs')
         self.lidar_dir = os.path.join(datadir, 'sorted_data', 'points_ped')
 
-        # ----- 本家Panoptic方式でカメラパラメータを構築 -----
-        calib_json = os.path.join(datadir, 'calibration_cam0.json')
-        if not os.path.exists(calib_json):
-            raise FileNotFoundError(f"カメラパラメータファイルが存在しません: {calib_json}")
-
-        with open(calib_json, 'r') as f:
+        # --- カメラパラメータ(json)の読み込み・本家式projectionM作成
+        # 1カメラ用 (カメラjsonのパスと内容は本家Panoptic.py参照)
+        # 例: calibration_cam0.json or calibration_xxx.json
+        cam_json_files = [f for f in os.listdir(datadir) if f.startswith('calibration_') and f.endswith('.json')]
+        if not cam_json_files:
+            raise RuntimeError('カメラキャリブレーションjsonが見つかりません')
+        cam_json_path = os.path.join(datadir, cam_json_files[0])
+        with open(cam_json_path) as f:
             calib_data = json.load(f)
-        # 基本的に "cameras" 配列の最初の要素を使う（カメラ1台前提）
-        cam = calib_data["cameras"][0]
-        # パラメータ抽出と変形（本家通り：fx, fy, cx, cy, k, pなども作成）
-        K = np.array(cam['K']).reshape(3, 3)
-        R = np.array(cam['R']).reshape(3, 3)
-        T = np.array(cam['t']).reshape(3, 1) / 100  # mm→m変換（Panopticは100で割る）
-        distCoef = np.array(cam.get('distCoef', [0,0,0,0,0]))
-        fx = K[0,0]
-        fy = K[1,1]
-        cx = K[0,2]
-        cy = K[1,2]
-        # 歪みパラメータ(k,p)も用意
-        k = distCoef[[0,1,4]].reshape(3, 1)
-        p = distCoef[[2,3]].reshape(2, 1)
-        # 本家dictフォーマット
-        self.camera = {
-            'K': K,
-            'R': R,
-            'T': T,
-            'fx': fx,
-            'fy': fy,
-            'cx': cx,
-            'cy': cy,
-            'k': k,
-            'p': p,
-            'distCoef': distCoef,
-        }
+        cam = calib_data["cameras"][0]  # 1台分のみ利用
+        self.projectionM = [{
+            "K": np.array(cam['K']),
+            "R": np.array(cam['R']),
+            "T": np.array(cam['t']).reshape(3, 1),
+            "fx": cam['K'][0][0],
+            "fy": cam['K'][1][1],
+            "cx": cam['K'][0][2],
+            "cy": cam['K'][1][2],
+            "k": np.array(cam['distCoef'])[[0,1,4]].reshape(3,1),
+            "p": np.array(cam['distCoef'])[[2,3]].reshape(2,1),
+            # 必要なら他も（top_cripなど）
+        }]
 
     def _read_point_cloud(self, ply_path):
         import open3d as o3d
@@ -103,8 +91,8 @@ class dataLoader(Panoptic):
         lidar_center = 0.5 * (np.max(xyz, axis=0) + np.min(xyz, axis=0))
         input3d = self.generate_3d_input(xyz, lidar_center)
 
-        # ---- 本家Panopticに合わせたprojectionM: リスト内dict形式で渡す ----
-        projectionM = [self.camera]
+        # ---- 本家Panopticに合わせたprojectionM ----
+        projectionM = self.projectionM  # ←初期化時に生成したリストを返す
 
         # テンソル化
         input3d = torch.from_numpy(input3d)[None].float()       # (1, d, w, h)
