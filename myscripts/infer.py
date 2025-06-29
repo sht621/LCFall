@@ -44,9 +44,8 @@ with torch.no_grad():
         grid_centers = grid_centers.to(device)
 
         pred_kp, voxel_prob = model(
-            input3d, input_heatmap, 
-            projection=projectionM, 
-            centers=grid_centers
+        input3d, input_heatmap, 
+        projectionM, grid_centers
         )
 
         np.save(f"{output_dir}/pred_kp_{i:06d}.npy", pred_kp[0].cpu().numpy())
