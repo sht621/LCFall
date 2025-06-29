@@ -64,7 +64,9 @@ class dataLoader(Panoptic):
         )  # (17, h, w)
 
         # Occupancy voxel & pelvis
-        input3d, grid_centers = self.generate_3d_input(xyz, kpts)
+        # ★ポイント：中心座標の計算（点群xyzの中央値を使う）
+        lidar_center = 0.5 * (np.max(xyz, axis=0) + np.min(xyz, axis=0))
+        input3d = self.generate_3d_input(xyz, lidar_center)
 
         # 射影行列（本家流で単カメラ対応）
         projectionM = [torch.eye(4)]  # ダミー値（実際は本家のカメラ行列等に合わせて調整）
@@ -72,6 +74,6 @@ class dataLoader(Panoptic):
         # テンソル化
         input3d = torch.from_numpy(input3d)[None].float()       # (1, d, w, h)
         heatmaps = torch.from_numpy(heatmaps)[None].float()     # (1, 17, h, w)
-        grid_centers = torch.from_numpy(grid_centers)[None].float()
+        grid_centers = torch.from_numpy(lidar_center)[None].float()  # (1, 3)
 
         return input3d, [heatmaps], projectionM, grid_centers
