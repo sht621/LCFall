@@ -23,6 +23,11 @@ class dataLoader(Panoptic):
         self.image_dir = os.path.join(datadir, 'sorted_data', 'hdImgs')
         self.lidar_dir = os.path.join(datadir, 'sorted_data', 'points_ped')
 
+    def _read_point_cloud(self, ply_path):
+        import open3d as o3d
+        pcd = o3d.io.read_point_cloud(str(ply_path))
+        return np.asarray(pcd.points)
+
     def _infer_pose2d(self, img_path):
         img = cv2.imread(str(img_path))
         kpts = self.pose2d(img)
