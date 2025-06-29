@@ -12,6 +12,7 @@ class dataLoader(Panoptic):
     """
 
     def __init__(self, cfg, datadir):
+        self.cfg = cfg
         super().__init__(cfg, datadir)
         self.pose2d = YOLOPose(device='cuda:0')
         # 本家は5台想定だが、ここで上書き
