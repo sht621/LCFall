@@ -10,7 +10,7 @@ MODEL: 'VoxelFusionNet'
 LOG_DIR: 'log'
 WORKERS: 8
 PRINT_FREQ: 500
-NUM_JOINTS: 17
+NUM_JOINTS: 15
 SEED: 1
 THU: true
 
