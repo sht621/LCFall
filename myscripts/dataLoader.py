@@ -71,7 +71,7 @@ class dataLoader(Panoptic):
         projectionM = [{
             "K": torch.eye(3),      # カメラ内部行列(仮)
             "R": torch.eye(3),      # 回転行列(仮)
-            "t": torch.zeros(3),    # 並進ベクトル(仮)
+            "T": torch.zeros(3),    # 並進ベクトル(仮)
             # 必要に応じて "top_crip": torch.zeros(3),
         }]
 
