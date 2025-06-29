@@ -105,10 +105,10 @@ class dataLoader(Panoptic):
 
         # テンソル化
         input3d = torch.from_numpy(input3d)[None].float()       # (1, d, w, h)
-        heatmaps = torch.from_numpy(heatmaps)[None].float()     # (1, 15, h, w)
+        heatmap = torch.from_numpy(heatmaps).float()  # (15, H, W)
         grid_centers = torch.from_numpy(lidar_center)[None].float()  # (1, 3)
 
-        return input3d, [heatmaps], projectionM, grid_centers
+        return input3d, [heatmap], projectionM, grid_centers
 
     def __len__(self):
         return len(self.frame_ids)
