@@ -39,6 +39,7 @@ os.makedirs(output_dir, exist_ok=True)
 with torch.no_grad():
     for i, batch in enumerate(loader):
         input3d, input_heatmap, projectionM, grid_centers = batch
+        grid_centers = grid_centers.squeeze(1)
         input3d = input3d.to(device)
         input_heatmap = [h.to(device) for h in input_heatmap]
         grid_centers = grid_centers.to(device)
