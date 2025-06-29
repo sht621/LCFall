@@ -56,11 +56,10 @@ class dataLoader(Panoptic):
     def _infer_pose2d(self, img_path):
         img = cv2.imread(str(img_path))
         kpts = self.pose2d(img)
-        # === ここでCOCO 17点→15点抽出 ===
-        # COCOからPanoptic形式: 0〜13番＋16番
+        # === COCO17点 → Panoptic15点に必ず揃える ===
         indices = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,16]
         if isinstance(kpts, np.ndarray) and kpts.shape[0] >= 17:
-            kpts = kpts[indices, :]   # 指定indexのみ
+            kpts = kpts[indices, :]   # 必ず15点に落とす！
         return kpts  # (15,3)
 
     def _generate_heatmap(self, kpts, heatmap_size, image_size):
